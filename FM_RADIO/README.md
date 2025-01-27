@@ -1,24 +1,9 @@
 # Starter code for FM Radio
 
-```Arduino
+# RDA5807 Library for Arduino
 
-#include <Bounce2.h>
-Bounce buttonA = Bounce();
+This repository provides a library for the RDA5807 FM radio module, designed for Arduino. It supports various features such as tuning to FM stations, retrieving RDS data, and more.
 
-void setup() {
-  buttonA.attach( 8 ,  INPUT_PULLUP );
-  buttonA.interval(20);
-  Serial.begin(9600);
-}
+## Repository URL
 
-void loop() {
-  buttonA.update();
-  if (buttonA.fell() ) {
-      Serial.println("pressed");
-  }
-  if ( buttonA.rose() ) {
-      Serial.println("depressed");
-  }
-}
-
-```
+[pu2clr/RDA5807 on GitHub](https://github.com/pu2clr/RDA5807)
