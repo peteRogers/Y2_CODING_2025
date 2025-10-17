@@ -62,4 +62,40 @@ DistortedTextColumn(
 ## 💡 Tips
 - For subtle motion, use low amplitude (10–30) and low frequency (0.01–0.03).  
 - For liquid or surreal effects, increase amplitude and lower frequency.  
-- Combine with gradient fills or masks for more experimental visuals.  
+- Combine with gradient fills or masks for more experimental visuals.
+
+---
+
+## 🎥 LoopingVideoView
+
+`LoopingVideoView` is a lightweight SwiftUI wrapper around **AVPlayer** that lets you play looping video content inside your app — ideal for backgrounds, previews, or ambient motion elements in your UI.
+
+It automatically:
+- Loads and plays a local or remote video file.
+- Loops the video seamlessly by restarting playback when it finishes.
+- Supports corner radius, aspect fill, and layering options.
+
+### ⚙️ Parameters
+
+| Parameter | Type | Description |
+|------------|------|-------------|
+| **`player`** | `AVPlayer` | The AVPlayer instance to play. Use a shared or preloaded player to avoid restarts. |
+| **`cornerRadius`** | `CGFloat` | Optional radius for rounding the video’s corners. |
+| **`videoGravity`** | `AVLayerVideoGravity` | Controls how the video scales within its layer (`.resizeAspectFill`, `.resizeAspect`, etc.). Default is `.resizeAspectFill`. |
+
+### 🧩 Example Usage
+
+```swift
+import AVKit
+
+struct ExampleView: View {
+    private let player = AVPlayer(url: Bundle.main.url(forResource: "sample", withExtension: "mp4")!)
+
+    var body: some View {
+        LoopingVideoView(player: player, cornerRadius: 12)
+            .frame(width: 300, height: 200)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .shadow(radius: 5)
+    }
+}
+``` 
