@@ -32,12 +32,15 @@ struct YourApp: App {
 
 Then is contentView just add this:
 ```swift
-    var serial: SerialManager
+var serial: SerialManager
 ```
 ---
 
-#---
-
+#Reading Values from arduino
+You can send multiple values from serial device like this:
+```swift
+V:123>V:1234>V:123>
+```
 ### 🔧 `mapRange(index:inMin:inMax:outMin:outMax:)`
 
 Maps a value from the `latestValuesFromArduino` array at the specified index from one numerical range to another.  
