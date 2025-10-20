@@ -30,53 +30,44 @@ struct YourApp: App {
 }
 ```
 
----
-
-## ⚙️ Parameters
-
-| Parameter | Type | Description |
-|------------|------|-------------|
-| **`text`** | `String` | The text to display. Can be multiline — automatically wraps to fit the column width. |
-| **`amplitude`** | `CGFloat` | Vertical displacement of the sine wave (in points). Larger values produce a stronger wobble. |
-| **`frequency`** | `CGFloat` | Controls how many waves appear across the text horizontally. Higher = tighter waves. |
-| **`speed`** | `CGFloat` | Speed of wave motion. Increasing makes the wave animate faster. |
-| **`columnWidth`** | `CGFloat` | Fixed width (in points) of the column; text wraps automatically at this width. |
-| **`fontSize`** | `CGFloat` | Size of the rendered text. |
-| **`fillColor`** | `Color` | Color used to fill the text shapes. |
-
----
-
-## 🧩 Example Usage
-
+Then is contentView just add this:
 ```swift
-DistortedTextColumn(
-    text: """
-    This is a sample multiline text that wraps inside a fixed column width.
-    It ripples and moves using a sine-wave animation.
-    """ ,
-    amplitude: 40,
-    frequency: 0.03,
-    speed: 2,
-    columnWidth: 300,
-    fontSize: 60,
-    fillColor: .black
+    var serial: SerialManager
+    ```
+---
+
+#---
+
+### 🔧 `mapRange(index:inMin:inMax:outMin:outMax:)`
+
+Maps a value from the `latestValuesFromArduino` array at the specified index from one numerical range to another.  
+This is useful for converting raw Arduino sensor values (e.g., 0–1023) into display values, animation parameters, or normalized outputs.
+
+#### **Parameters**
+| Name | Type | Description |
+|------|------|-------------|
+| `index` | `Int` | The position of the value in `latestValuesFromArduino` to map. |
+| `inMin` | `Float` | The minimum expected input value (e.g. the lowest sensor reading). |
+| `inMax` | `Float` | The maximum expected input value (e.g. the highest sensor reading). |
+| `outMin` | `Float` | The minimum output range value (e.g. screen coordinate minimum). |
+| `outMax` | `Float` | The maximum output range value (e.g. normalized or screen coordinate maximum). |
+
+#### **Throws**
+- `SerialManagerError.noValueAtIndex` — if the specified `index` is out of range or `latestValuesFromArduino` has no value at that position.
+
+#### **Returns**
+A `Float` that represents the mapped value from the input range `[inMin, inMax]` to the output range `[outMin, outMax]`.
+
+#### **Example**
+```swift
+// Example: Map a sensor reading (0–1023) to normalized brightness (0–1)
+let brightness = try serial.mapRange(
+    index: 0,
+    inMin: 0,
+    inMax: 1023,
+    outMin: 0,
+    outMax: 1
 )
-.frame(maxWidth: .infinity, maxHeight: .infinity)
-.background(Color.white)
 ```
 
----
 
-## 🪄 How It Works
-`DistortedTextColumn`:
-1. Uses **Core Text** to generate properly wrapped glyph paths.  
-2. Applies a **time-based sine offset** to every path element via a `distortPath` function.  
-3. Draws the result in a SwiftUI **Canvas** for smooth GPU rendering.  
-4. Animates continuously using a `TimelineView(.animation)`.
-
----
-
-## 💡 Tips
-- For subtle motion, use low amplitude (10–30) and low frequency (0.01–0.03).  
-- For liquid or surreal effects, increase amplitude and lower frequency.  
-- Combine with gradient fills or masks for more experimental visuals.  
