@@ -23,10 +23,22 @@ class SerialManager {
     private var readerTask: Task<Void, Never>?
     
     // MARK: - Port management
-    init() {
-        refreshPorts()
-        if let lastPort = availablePorts.last {
-            connect(to: lastPort)
+    init(simulate: Bool = false) {
+        #if DEBUG
+        let isPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+        #else
+        let isPreview = false
+        #endif
+
+        if simulate {
+            print("🧩 Simulated SerialManager created — no real hardware.")
+        } else if isPreview {
+            print("👀 Detected SwiftUI Preview — skipping serial setup.")
+        } else {
+            refreshPorts()
+            if let lastPort = availablePorts.last {
+                connect(to: lastPort)
+            }
         }
     }
     
@@ -198,31 +210,32 @@ class SerialManager {
 }
 
 
+// In SerialManager.swift (or its own file)
 @MainActor
 @Observable
 final class MockSerialManager: SerialManager {
-    var x = 0
-    var inc = 1
-    override init() {
-        super.init()
+
+    init() {                     // <-- No 'override' here
+        super.init(simulate: true)
         simulateIncomingValues()
     }
-    
-    func simulateIncomingValues() {
-        Task {
-            while true {
-                try? await Task.sleep(for: .seconds(0.005))
-                x+=inc
-                if(x > 5000 || x < -5000){
-                    inc = inc * -5
+
+    private func simulateIncomingValues() {
+        Task { [weak self] in
+            var v: Int = 0
+            while let self = self {
+                try? await Task.sleep(for: .milliseconds(300))
+                v = (v + Int.random(in: 1...25)) % 1024
+                // Update whatever properties your UI reads:
+                self.latestValueFromArduino = String(v)
+                self.lastLine = "VAL:\(v)"
+                // If you keep an array:
+                if self.latestValuesFromArduino.indices.contains(0) {
+                    self.latestValuesFromArduino[0] = Float(v)
+                } else {
+                    self.latestValuesFromArduino.append(Float(v))
                 }
-                self.latestValueFromArduino = String(x)
-                // Also update the array for simulation:
-                self.latestValuesFromArduino = [Float(x)]
             }
         }
     }
 }
-        
-        
-
