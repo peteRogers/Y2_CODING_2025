@@ -3,12 +3,12 @@
 **`Serial Manager`** is a Swift class that you can add to your app to allow for serial connections in your SwiftUI app. It uses @observable to bind data to your swiftUI views
 
 
----
+## ✨ Adding to your App:
+For a 'single point of truth', it’s best to create the SerialManager in the app’s entry point so it’s initialized once and accessible to all views. If you create it in the ContentView it might get remade as the app is running which causes issues.
 
-## ✨ Adding to code
-For a single point of truth, it’s best to create the SerialManager in the app’s entry point so it’s initialized once and accessible to all views.
 ```swift
-    import SwiftUI
+import SwiftUI
+
 @main
 struct YourApp: App {
     @Environment(\.scenePhase) private var scenePhase
@@ -33,7 +33,7 @@ struct YourApp: App {
 Then is contentView just add this:
 ```swift
     var serial: SerialManager
-    ```
+```
 ---
 
 #---
