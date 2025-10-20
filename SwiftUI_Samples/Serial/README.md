@@ -30,7 +30,7 @@ struct YourApp: App {
 }
 ```
 
-Then is contentView just add this:
+Then in your ContentView (or wherever you want to use it) just add this:
 ```swift
 var serial: SerialManager
 ```
