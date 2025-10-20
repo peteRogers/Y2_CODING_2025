@@ -1,4 +1,4 @@
-# 🌀 Serial Connection 
+# 🚠 Serial Connection 
 
 **`Serial Manager`** is a Swift class that you can add to your app to allow for serial connections in your SwiftUI app. It uses @observable to bind data to your swiftUI views
 
@@ -36,8 +36,9 @@ var serial: SerialManager
 ```
 ---
 
-#Reading Values from arduino
-You can send multiple values from serial device like this:
+#You can send multiple values from your serial device
+
+Send your values formatted like this, you can send as many or as few as you like:
 ```swift
 V:123>V:1234>V:123>
 ```
