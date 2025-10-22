@@ -27,15 +27,16 @@ void loop() {
      
       Serial.print(i); 
       Serial.print(">"); 
-      Serial.println("1");
-      
+      Serial.print("1");
+      Serial.println("<");
       delay(1);
     }
     if (!(currtouched & _BV(i)) && (lasttouched & _BV(i)) ) {
       
       Serial.print(i); 
       Serial.print(">"); 
-      Serial.println("0");
+      Serial.print("0");
+      Serial.println("<");
       delay(1);
     }
   }
