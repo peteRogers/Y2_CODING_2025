@@ -13,9 +13,9 @@ class SerialManager {
     var connectedPort: String?
     var isConnected: Bool { handle != nil }
     var receivedText: String = ""
-    var lastLine: String = ""
+    var lastLine: String = "Waiting for data"
     var latestValueFromArduino: String = ""
-    var latestValuesFromArduino: [Float] = []   // Stores values as array of Floats
+    var latestValuesFromArduino: [Int: Float] = [:]   // Stores values as dictionary of Int keys and Float values
     var errorMessage: String?
     
     // MARK: - Private properties
@@ -23,10 +23,22 @@ class SerialManager {
     private var readerTask: Task<Void, Never>?
     
     // MARK: - Port management
-    init() {
-        refreshPorts()
-        if let lastPort = availablePorts.last {
-            connect(to: lastPort)
+    init(simulate: Bool = false) {
+        #if DEBUG
+        let isPreview = ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+        #else
+        let isPreview = false
+        #endif
+
+        if simulate {
+            print("🧩 Simulated SerialManager created — no real hardware.")
+        } else if isPreview {
+            print("👀 Detected SwiftUI Preview — skipping serial setup.")
+        } else {
+            refreshPorts()
+            if let lastPort = availablePorts.last {
+                connect(to: lastPort)
+            }
         }
     }
     
@@ -121,22 +133,24 @@ class SerialManager {
                             await MainActor.run {
                                 self.receivedText += line + "\n"
                                 self.lastLine = line
-                                // 💡 Detect and share Arduino values
-                                if line.contains("V") && line.contains(":") {
-                                    // Parse multiple values, e.g. VAL1:20>VAL2:30
-                                    let pairs = line.split(separator: ">")
-                                    var values: [Float] = []
-                                    for pair in pairs {
-                                        let parts = pair.split(separator: ":")
-                                        if parts.count == 2,
-                                           let value = Float(parts[1]) {
-                                            values.append(value)
+                                // 💡 Parse custom Arduino format: e.g. "0>123<1>456<"
+                                var firstValue: Float?
+                                let segments = line.split(separator: "<")
+                                for segment in segments {
+                                    if segment.isEmpty { continue }
+                                    let parts = segment.split(separator: ">")
+                                    if parts.count == 2,
+                                       let id = Int(parts[0]),
+                                       let value = Float(parts[1]) {
+                                        self.latestValuesFromArduino[id] = value
+                                        if firstValue == nil {
+                                            firstValue = value
                                         }
                                     }
-                                    self.latestValuesFromArduino = values
-                                    print("📡 Updated values from Arduino: \(self.latestValuesFromArduino)")
-                                    // Optionally set the first as latestValueFromArduino for compatibility:
-                                    self.latestValueFromArduino = values.first.map { String($0) } ?? ""
+                                }
+                                if !segments.isEmpty {
+                                    // For compatibility, set latestValueFromArduino to first parsed value
+                                    self.latestValueFromArduino = firstValue.map { String($0) } ?? ""
                                 }
                                 // self.commandHandler?.handleCommand(line)
                             }
@@ -176,10 +190,9 @@ class SerialManager {
     
     // Map using value at given index in latestValuesFromArduino, throws if missing
     func mapRange(index: Int, inMin: Float, inMax: Float, outMin: Float, outMax: Float) throws -> Float {
-        guard latestValuesFromArduino.indices.contains(index) else {
+        guard let value = latestValuesFromArduino[index] else {
             throw SerialManagerError.noValueAtIndex
         }
-        let value = latestValuesFromArduino[index]
         let clampedValue = min(max(value, inMin), inMax)
         let inRange = inMax - inMin
         let outRange = outMax - outMin
@@ -198,31 +211,28 @@ class SerialManager {
 }
 
 
+// In SerialManager.swift (or its own file)
 @MainActor
 @Observable
 final class MockSerialManager: SerialManager {
-    var x = 0
-    var inc = 1
-    override init() {
-        super.init()
+
+    init() {                     // <-- No 'override' here
+        super.init(simulate: true)
         simulateIncomingValues()
     }
-    
-    func simulateIncomingValues() {
-        Task {
-            while true {
-                try? await Task.sleep(for: .seconds(0.005))
-                x+=inc
-                if(x > 5000 || x < -5000){
-                    inc = inc * -5
-                }
-                self.latestValueFromArduino = String(x)
-                // Also update the array for simulation:
-                self.latestValuesFromArduino = [Float(x)]
+
+    private func simulateIncomingValues() {
+        Task { [weak self] in
+            var v: Int = 0
+            while let self = self {
+                try? await Task.sleep(for: .milliseconds(300))
+                v = (v + Int.random(in: 1...25)) % 1024
+                // Update whatever properties your UI reads:
+                self.latestValueFromArduino = String(v)
+                self.lastLine = "VAL:\(v)"
+                // If you keep a dictionary:
+                self.latestValuesFromArduino[0] = Float(v)
             }
         }
     }
 }
-        
-        
-
