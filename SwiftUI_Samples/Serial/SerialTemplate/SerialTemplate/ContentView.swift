@@ -13,7 +13,7 @@ struct ContentView: View {
     var body: some View {
         ZStack{
             // Map value from 0–1023 to brightness 0–1
-            let brightness = (serial.latestValuesFromArduino.first ?? 1000) / 1023.0
+            let brightness = (serial.latestValuesFromArduino[0] ?? 0) / 1023.0
             Color(hue: 0.6, saturation: 0.5, brightness: Double(brightness))
                 .edgesIgnoringSafeArea(.all)
             VStack {
@@ -25,12 +25,11 @@ struct ContentView: View {
                 
                 HStack {
                     Gauge(
-                        value: serial.latestValuesFromArduino.first ?? 0.0,
+                        value: serial.latestValuesFromArduino[1] ?? 0,
                         in: 0...1023
                     ) {
                         EmptyView()
                     }
-                    
                     .gaugeStyle(.accessoryCircularCapacity)
                     .tint(.white)
                     .scaleEffect(5.0)  // Makes it much larger

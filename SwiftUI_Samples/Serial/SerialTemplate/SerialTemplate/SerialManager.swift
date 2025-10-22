@@ -15,7 +15,7 @@ class SerialManager {
     var receivedText: String = ""
     var lastLine: String = "Waiting for data"
     var latestValueFromArduino: String = ""
-    var latestValuesFromArduino: [Float] = []   // Stores values as array of Floats
+    var latestValuesFromArduino: [Int: Float] = [:]   // Stores values as dictionary of Int keys and Float values
     var errorMessage: String?
     
     // MARK: - Private properties
@@ -133,22 +133,24 @@ class SerialManager {
                             await MainActor.run {
                                 self.receivedText += line + "\n"
                                 self.lastLine = line
-                                // 💡 Detect and share Arduino values
-                                if line.contains("V") && line.contains(":") {
-                                    // Parse multiple values, e.g. VAL1:20>VAL2:30
-                                    let pairs = line.split(separator: ">")
-                                    var values: [Float] = []
-                                    for pair in pairs {
-                                        let parts = pair.split(separator: ":")
-                                        if parts.count == 2,
-                                           let value = Float(parts[1]) {
-                                            values.append(value)
+                                // 💡 Parse custom Arduino format: e.g. "0>123<1>456<"
+                                var firstValue: Float?
+                                let segments = line.split(separator: "<")
+                                for segment in segments {
+                                    if segment.isEmpty { continue }
+                                    let parts = segment.split(separator: ">")
+                                    if parts.count == 2,
+                                       let id = Int(parts[0]),
+                                       let value = Float(parts[1]) {
+                                        self.latestValuesFromArduino[id] = value
+                                        if firstValue == nil {
+                                            firstValue = value
                                         }
                                     }
-                                    self.latestValuesFromArduino = values
-                                    print("📡 Updated values from Arduino: \(self.latestValuesFromArduino)")
-                                    // Optionally set the first as latestValueFromArduino for compatibility:
-                                    self.latestValueFromArduino = values.first.map { String($0) } ?? ""
+                                }
+                                if !segments.isEmpty {
+                                    // For compatibility, set latestValueFromArduino to first parsed value
+                                    self.latestValueFromArduino = firstValue.map { String($0) } ?? ""
                                 }
                                 // self.commandHandler?.handleCommand(line)
                             }
@@ -188,10 +190,9 @@ class SerialManager {
     
     // Map using value at given index in latestValuesFromArduino, throws if missing
     func mapRange(index: Int, inMin: Float, inMax: Float, outMin: Float, outMax: Float) throws -> Float {
-        guard latestValuesFromArduino.indices.contains(index) else {
+        guard let value = latestValuesFromArduino[index] else {
             throw SerialManagerError.noValueAtIndex
         }
-        let value = latestValuesFromArduino[index]
         let clampedValue = min(max(value, inMin), inMax)
         let inRange = inMax - inMin
         let outRange = outMax - outMin
@@ -229,12 +230,8 @@ final class MockSerialManager: SerialManager {
                 // Update whatever properties your UI reads:
                 self.latestValueFromArduino = String(v)
                 self.lastLine = "VAL:\(v)"
-                // If you keep an array:
-                if self.latestValuesFromArduino.indices.contains(0) {
-                    self.latestValuesFromArduino[0] = Float(v)
-                } else {
-                    self.latestValuesFromArduino.append(Float(v))
-                }
+                // If you keep a dictionary:
+                self.latestValuesFromArduino[0] = Float(v)
             }
         }
     }
