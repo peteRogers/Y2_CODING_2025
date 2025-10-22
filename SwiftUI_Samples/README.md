@@ -92,10 +92,8 @@ struct ExampleView: View {
     private let player = AVPlayer(url: Bundle.main.url(forResource: "sample", withExtension: "mp4")!)
 
     var body: some View {
-        LoopingVideoView(player: player, cornerRadius: 12)
-            .frame(width: 300, height: 200)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .shadow(radius: 5)
+         LoopingVideoView(url: demoVideoURL!, cornerRadius: 1)
+                        .aspectRatio(1, contentMode: .fit)
     }
 }
 ```
