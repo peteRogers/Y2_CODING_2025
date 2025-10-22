@@ -98,7 +98,8 @@ struct ExampleView: View {
             .shadow(radius: 5)
     }
 }
-``` 
+```
+---
 ## 🗺️ Mapping 
 
 ```swift
