@@ -19,8 +19,11 @@ final class SimpleAudioControl {
     private let mixer = Mixer()
     private let player = AudioPlayer()
     private var reverb:ZitaReverb?
+    
+    
 
     func setup() {
+       
         print("restarting audio engine")
         do {
             let url = Bundle.main.url(forResource: "crow", withExtension: "wav")
@@ -30,6 +33,7 @@ final class SimpleAudioControl {
             reverb?.dryWetMix = 0
             mixer.addInput(reverb!)
             engine.output = mixer
+            freopen("/dev/null", "w", stderr)
             try engine.start()
             print("🎧 Engine started.")
         } catch {
@@ -48,7 +52,18 @@ final class SimpleAudioControl {
        print("trying to stop")
        player.stop()
     }
-
+    
+    func setVolume(from value: Float) {
+        player.volume = AUValue(value)
+      
+    }
+    
+    func setReverbMix(from value: Float) {
+        guard let reverb = reverb else { return } // <-- prevent invalid parameter call
+        let mix = max(0.0, min(1.0, value / 1023.0))
+        reverb.dryWetMix = AUValue(mix)
+    }
+    
     func stopEngine() {
         engine.stop()
         print("🛑 Engine stopped.")
