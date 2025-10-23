@@ -117,4 +117,15 @@ struct ExampleView: View {
                 
             }.mapStyle(.imagery(elevation: .realistic))
 ```
+---
+## RealityView
+ RealityView { content in
+            // Add a simple 3D object (a white sphere)
+            let material = SimpleMaterial(color: .orange, isMetallic: true)
+                        
+            let sphere = ModelEntity(mesh: .generateSphere(radius: 0.5))
+            sphere.model?.materials = [material]
+            content.add(sphere)
+        }.realityViewCameraControls(.orbit)
+```
 
