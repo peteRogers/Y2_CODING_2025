@@ -119,6 +119,7 @@ struct ExampleView: View {
 ```
 ---
 ## RealityView
+```swift
  RealityView { content in
             // Add a simple 3D object (a white sphere)
             let material = SimpleMaterial(color: .orange, isMetallic: true)
