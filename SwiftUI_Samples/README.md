@@ -129,4 +129,21 @@ struct ExampleView: View {
             content.add(sphere)
         }.realityViewCameraControls(.orbit)
 ```
+---
+```swift
+         RealityView { content in
+                    let mesh = MeshResource.generateSphere(radius: 50)
+                    var mat = UnlitMaterial()
+                    if let tex = try? await TextureResource(named: "sky.exr") {
+                        mat.color = .init(texture: .init(tex))
+                    }
+                    mat.faceCulling = .front
+                    let dome = ModelEntity(mesh: mesh, materials: [mat])
+                    content.add(dome)
+                }
+                .realityViewCameraControls(.orbit)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .ignoresSafeArea()
+            }
+```
 
