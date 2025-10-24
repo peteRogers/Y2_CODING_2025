@@ -216,4 +216,21 @@ struct ObjectView: View {
 #Preview { ObjectView() }
 
 ```
+---
+## AudioKit flanger
+```swift
+flanger = Flanger(chorus!)
+            flanger?.depth = 1
+            flanger?.dryWetMix = 1
+            mixer.addInput(flanger!)
+```
+func to set params
 
+```swift
+func setFlanger(value: Float) {
+        guard let flanger = flanger else { return } // <-- prevent invalid parameter call
+        print(value)
+        flanger.feedback = value
+        flanger.frequency = value * 10.0
+    }
+```
