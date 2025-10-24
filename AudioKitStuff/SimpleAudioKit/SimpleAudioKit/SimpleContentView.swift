@@ -26,15 +26,18 @@ struct SimpleContentView: View{
             
             Slider(value: $volume, in: 0...1)
                 .onChange(of: volume) { _, newValue in
-                    simpleAudio.setVolume(from: newValue)
+                    simpleAudio.setVolume(value: newValue)
             }.padding(.horizontal, 200)
             
-        }.onAppear {
+        }
+        .onAppear {
             simpleAudio.setup()
         }
         .onChange(of: serial.latestValuesFromArduino[0]) { _, newValue in
             if let val = newValue{
-                simpleAudio.setReverbMix(from: val)
+                simpleAudio.setReverbMix(value: val.mapped(from: 0, 500, to: 0.0, 1.0))
+                print(val.mapped(from: 500, 1023, to: 0.0, 0.8))
+                simpleAudio.setChorusMix(value: val.mapped(from: 500, 1023, to: 0.0, 0.8))
             }
         }
     }

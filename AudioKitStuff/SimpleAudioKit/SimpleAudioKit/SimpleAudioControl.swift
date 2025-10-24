@@ -19,19 +19,23 @@ final class SimpleAudioControl {
     private let mixer = Mixer()
     private let player = AudioPlayer()
     private var reverb:ZitaReverb?
+    private var chorus: Chorus?
     
     
 
     func setup() {
-       
         print("restarting audio engine")
         do {
-            let url = Bundle.main.url(forResource: "crow", withExtension: "wav")
+            let url = Bundle.main.url(forResource: "tropBird", withExtension: "wav")
             try player.load(url: url!, buffered: true)
             player.isLooping = true
             reverb = ZitaReverb(player)
             reverb?.dryWetMix = 0
-            mixer.addInput(reverb!)
+            chorus = Chorus(reverb!)
+            chorus?.dryWetMix = 0
+            chorus?.depth = 1
+            chorus?.frequency = 5.0
+            mixer.addInput(chorus!)
             engine.output = mixer
             freopen("/dev/null", "w", stderr)
             try engine.start()
@@ -53,15 +57,19 @@ final class SimpleAudioControl {
        player.stop()
     }
     
-    func setVolume(from value: Float) {
+    func setVolume(value: Float) {
         player.volume = AUValue(value)
       
     }
     
-    func setReverbMix(from value: Float) {
+    func setReverbMix(value: Float) {
         guard let reverb = reverb else { return } // <-- prevent invalid parameter call
-        let mix = max(0.0, min(1.0, value / 1023.0))
-        reverb.dryWetMix = AUValue(mix)
+        reverb.dryWetMix = value
+    }
+    
+    func setChorusMix(value: Float) {
+        guard let chorus = chorus else { return } // <-- prevent invalid parameter call
+        chorus.dryWetMix = value
     }
     
     func stopEngine() {

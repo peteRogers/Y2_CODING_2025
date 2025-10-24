@@ -210,6 +210,16 @@ class SerialManager {
     }
 }
 
+extension Float {
+    func mapped(from inMin: Float, _ inMax: Float, to outMin: Float, _ outMax: Float) -> Float {
+        let clamped = min(max(self, inMin), inMax)
+        let inRange = inMax - inMin
+        let outRange = outMax - outMin
+        let scaled = (clamped - inMin) / inRange
+        return outMin + (scaled * outRange)
+    }
+}
+
 
 // In SerialManager.swift (or its own file)
 @MainActor
